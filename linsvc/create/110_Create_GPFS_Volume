@@ -8,7 +8,7 @@
 # Description: Create the GPFS volume and mount it
 # Script:
 
-set -ex
+set -e
 if [ @@{calm_array_index}@@ -eq 0 ]
 then
   sharedvg_vdisks="@@{sharedvg_vdisks}@@"
@@ -32,8 +32,8 @@ then
   source .bash_profile
   sudo env "PATH=$PATH" mmcrnsd -F NSD_Stanza_File.txt
 
-  sudo env "PATH=$PATH" mmcrfs sasdata -F NSD_Stanza_File.txt -B 1m
+  sleep 30
 
-  sudo env "PATH=$PATH" mmshutdown -a
-  sudo env "PATH=$PATH" mmstartup -a
+  sudo env "PATH=$PATH" mmcrfs sasdata -F NSD_Stanza_File.txt -B 1m -A yes -T /sasdata
+
 fi
