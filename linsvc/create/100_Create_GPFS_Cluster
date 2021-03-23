@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# Author:      Akim Sissaoui
+# Action:      Create
+# Name:        100_Create_GPFS_Cluster
+# Type:        Execute
+# Script Type: Shell
+# Description: Create the GPFS Cluster
+
+# Script:
+
+set -ex
+
+if [ @@{calm_array_index}@@ -eq 0 ]
+then
+	# Create cluster
+	sudo env "PATH=$PATH" mmcrcluster -C SASDATA -N nodelist.txt -r /usr/bin/ssh -R /usr/bin/scp
+	# Accept License Terms
+	sudo env "PATH=$PATH" mmchlicense server --accept -N nodelist.txt
+fi

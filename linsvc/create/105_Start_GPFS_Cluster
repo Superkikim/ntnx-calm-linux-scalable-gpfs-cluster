@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# Author:      Akim Sissaoui
+# Action:      Create
+# Name:        105_Start_GPFS_Cluster
+# Type:        Execute
+# Script Type: Shell
+# Description: Create the GPFS Cluster
+
+# Script:
+
+set -ex
+
+if [ @@{calm_array_index}@@ -eq 0 ]
+then
+	# Start cluster
+	sudo env "PATH=$PATH" mmstartup -a
+fi

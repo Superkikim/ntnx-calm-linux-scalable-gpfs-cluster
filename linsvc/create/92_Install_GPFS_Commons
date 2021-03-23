@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+# Author:      Akim Sissaoui
+# Action:      Create
+# Name:        92_Install_GPFS_Commons
+# Type:        Execute
+# Script Type: Shell
+# Description: Install GPFS common packages
+
+# Script:
+set -e
+
+cd install
+sudo ./Spectrum_Scale_Data_Access-*-x86_64-Linux-install --silent
+cd ~
+if ! [ "@@{calm_array_address[0]}@@" == "@@{address}@@" ]
+then
+	rm -rf install
+fi
+version=$(ls /usr/lpp/mmfs)
+
+cd /usr/lpp/mmfs/$version/gpfs_rpms
+sudo yum install -y gpfs.base*.rpm gpfs.gpl*rpm gpfs.license*rpm gpfs.gskit*rpm gpfs.msg*rpm gpfs.adv*rpm gpfs.docs*.rpm
+
+cd ~
+sudo awk '/^PATH=/{$0=$0 ":/usr/lpp/mmfs/bin"}1' /root/.bash_profile > tmp_profile && sudo mv tmp_profile /root/.bash_profile
+awk '/^PATH=/{$0=$0 ":/usr/lpp/mmfs/bin"}1' ~/.bash_profile> tmp_profile && mv tmp_profile .bash_profile
+source ~/.bash_profile
+
+sudo env "PATH=$PATH" mmbuildgpl
