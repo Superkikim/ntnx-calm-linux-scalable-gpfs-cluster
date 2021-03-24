@@ -9,4 +9,4 @@
 # Script:
 
 scp @@{calm_array_address[0]}@@:.ssh/known_hosts .ssh/
-sudo scp scp @@{calm_array_address[0]}@@:/root/.ssh/known_hosts /root/.ssh/
+sudo scp @@{calm_array_address[0]}@@:/root/.ssh/known_hosts /root/.ssh/
