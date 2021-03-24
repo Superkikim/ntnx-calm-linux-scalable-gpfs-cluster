@@ -9,7 +9,6 @@
 
 # Script:
 
-set -e
 source .bash_profile
 if [ @@{calm_array_index}@@ -eq 0 ]
 then
@@ -20,7 +19,7 @@ then
     do
         i=$(sudo env "PATH=$PATH" mmgetstate -a | grep -c arbitrating)
 		echo "Arbitrating $i node(s)"
-        sleep 2
+        sleep 1
     done
     echo "GPFS Daemon ready on all nodes"
 fi
