@@ -31,9 +31,6 @@ then
 
   source .bash_profile
   sudo env "PATH=$PATH" mmcrnsd -F NSD_Stanza_File.txt
-
-  sleep 30
-
   sudo env "PATH=$PATH" mmcrfs sasdata -F NSD_Stanza_File.txt -B 1m -A yes -T /sasdata
 
 fi

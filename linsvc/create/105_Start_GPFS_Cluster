@@ -9,10 +9,18 @@
 
 # Script:
 
-set -ex
-
+set -e
+source .bash_profile
 if [ @@{calm_array_index}@@ -eq 0 ]
 then
-	# Start cluster
-	sudo env "PATH=$PATH" mmstartup -a
+    i=$(sudo env "PATH=$PATH" mmgetstate -a | grep -c down)
+    sudo env "PATH=$PATH" mmstartup -a
+    sleep 1
+    until [ $i -eq "0" ]
+    do
+        i=$(sudo env "PATH=$PATH" mmgetstate -a | grep -c arbitrating)
+		echo "Arbitrating $i node(s)"
+        sleep 2
+    done
+    echo "GPFS Daemon ready on all nodes"
 fi
