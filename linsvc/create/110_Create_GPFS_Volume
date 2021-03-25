@@ -25,10 +25,10 @@ then
   for dev in $devs
   do
       i=$((i+1))
-      echo "%nsd: device=$dev nsd=@@{shared_volume_name}@@$i" | tee -a NSD_Stanza_File.txt
+      echo "%nsd: device=$dev nsd=@@{shared_vol_name}@@$i" | tee -a NSD_Stanza_File.txt
   done
 
   source .bash_profile
   sudo env "PATH=$PATH" mmcrnsd -F NSD_Stanza_File.txt
-  sudo env "PATH=$PATH" mmcrfs @@{shared_volume_name}@@ -F NSD_Stanza_File.txt -B 1m
+  sudo env "PATH=$PATH" mmcrfs @@{shared_vol_name}@@ -F NSD_Stanza_File.txt -B 1m
 fi
