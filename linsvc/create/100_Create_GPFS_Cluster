@@ -13,8 +13,12 @@ set -ex
 
 if [ @@{calm_array_index}@@ -eq 0 ]
 then
+source ~/.bash_profile
+	sudo cp nodelist.txt /root/nodelist.txt
+
 	# Create cluster
-	sudo env "PATH=$PATH" mmcrcluster -C SASDATA -N nodelist.txt -r /usr/bin/ssh -R /usr/bin/scp
+	sudo env "PATH=$PATH" mmcrcluster -C @@{gpfs_cluster_name}@@ -N nodelist.txt -r /usr/bin/ssh -R /usr/bin/scp
+	nodes=$(for node in $(cat nodelist.txt | cut -d":" -f1);do echo -n "$node,";done)
 	# Accept License Terms
-	sudo env "PATH=$PATH" mmchlicense server --accept -N nodelist.txt
+	sudo env "PATH=$PATH" mmchlicense server --accept -N ${nodes%?}
 fi

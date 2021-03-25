@@ -27,23 +27,23 @@ done
 sudo vgcreate -s 1M localvg $pv
 
 # Create an LVM volume group
-sudo lvcreate -n localvol --extents 100%FREE -i 4 -I 1M localvg
+sudo lvcreate -n @@{local_vol_name}@@ --extents 100%FREE -i 4 -I 1M localvg
 
 # Create XFS file system
-sudo mkfs.xfs -b size=4k -d sw=4,su=1m /dev/localvg/localvol
+sudo mkfs.xfs -b size=4k -d sw=4,su=1m /dev/localvg/@@{local_vol_name}@@
 
 # Create Mount point
-sudo mkdir @@{localvol_mount_point}@@
+sudo mkdir /var/@@{local_vol_name}@@
 
 # Add mountpoint to fstab for mount at boot
 sudo cp /etc/fstab /etc/fstab.iscsi.bak -n
-echo -e "UUID=$(sudo blkid -o value -s UUID /dev/mapper/localvg-localvol)\t@@{localvol_mount_point}@@\txfs\tdefaults\t0\t0" | sudo tee -a /etc/fstab
+echo -e "UUID=$(sudo blkid -o value -s UUID /dev/mapper/localvg-@@{local_vol_name}@@)\t/var/@@{local_vol_name}@@\txfs\tdefaults\t0\t0" | sudo tee -a /etc/fstab
 # Try to mount new fstab entry
 sudo mount -a
 
 # Verify mounted file system
 echo "Verifying mounted filesystem:"
-if [ $(df -h | grep -c "localvol1") == 1 ];then echo -e "\nFile successfully mounted:\n";df -h | grep "localvol1";echo -e "\n\n";else echo -e "\nThere seem to be a problem. Please check your config:\n\nMounted filesystems:\n\n$(df -h)\nContent of fstab:\n\n$(cat /etc/fstab)\n";fi
+if [ $(df -h | grep -c "@@{local_vol_name}@@") == 1 ];then echo -e "\nFile successfully mounted:\n";df -h | grep "@@{local_vol_name}@@";echo -e "\n\n";else echo -e "\nThere seem to be a problem. Please check your config:\n\nMounted filesystems:\n\n$(df -h)\nContent of fstab:\n\n$(cat /etc/fstab)\n";fi
 
 # cat fstab for troubleshooting purpose
 cat /etc/fstab

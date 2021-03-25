@@ -2,13 +2,12 @@
 
 # Author:      Akim Sissaoui
 # Action:      Create
-# Name:        110_Create_GPFS_Volume_and_mount
+# Name:        110_Create_GPFS_Volume
 # Type:        Execute
 # Script Type: Shell
-# Description: Create the GPFS volume and mount it
+# Description: Create a GPFS volume
 # Script:
 
-set -e
 if [ @@{calm_array_index}@@ -eq 0 ]
 then
   sharedvg_vdisks="@@{sharedvg_vdisks}@@"
@@ -26,12 +25,10 @@ then
   for dev in $devs
   do
       i=$((i+1))
-      echo "%nsd: device=$dev nsd=sasdata$i" | tee -a NSD_Stanza_File.txt
+      echo "%nsd: device=$dev nsd=@@{shared_volume_name}@@$i" | tee -a NSD_Stanza_File.txt
   done
 
   source .bash_profile
   sudo env "PATH=$PATH" mmcrnsd -F NSD_Stanza_File.txt
-  sudo env "PATH=$PATH" mmcrfs sasdata -F NSD_Stanza_File.txt -B 1m
-  sudo env "PATH=$PATH" mmmount sasdata /sasdata -a
-
+  sudo env "PATH=$PATH" mmcrfs @@{shared_volume_name}@@ -F NSD_Stanza_File.txt -B 1m
 fi
