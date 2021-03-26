@@ -8,4 +8,4 @@
 # Description: Stop GPFS daemon and remove node from the cluster
 # Script:
 
-ssh @@{calm_array_address[0]}@@ 'source .bash_profile && sudo env "PATH=$PATH" mmshutdown -N @@{name}@@ && sudo env "PATH=$PATH" mmadelnode -N @@{name}@@'
+ssh @@{calm_array_address[0]}@@ 'source .bash_profile && sudo env "PATH=$PATH" mmshutdown -N @@{name}@@ && sudo env "PATH=$PATH" mmdelnode -N @@{name}@@'
