@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Author:      Akim Sissaoui
+# Action:      Create
+# Name:        115_Add_New_node_to_Cluster
+# Type:        Execute
+# Script Type: Shell
+# Description: Add a new node to the GPFS Cluster
+# Script:
+
+if ! [ -f /home/@@{admin_cred.username}@@/changes/semaphore ]
+then
+	source .bash_profile
+	ssh @@{calm_array_address[0]}@@ sudo env "PATH=$PATH" mmaddnode -N $(hostname)
+  sudo env "PATH=$PATH" mmchlicense server --accept -N $(hostname)
+	sudo env "PATH=$PATH" mmstartup
+fi
