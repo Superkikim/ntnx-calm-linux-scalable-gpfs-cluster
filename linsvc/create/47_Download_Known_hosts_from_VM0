@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+# Author:      Akim Sissaoui
+# Action:      Create
+# Name:        47_Download_Known_hosts_from_VM0
+# Type:        Execute
+# Script Type: Shell
+# Description: Retrieve known_hosts from local user and root to this machine
+# Script:
+
+# Get appname and make it lower case
+appname="@@{calm_application_name}@@"
+appname="${appname,,}"
+
+# get hostname
+name=$(hostname)
+
+# Get hosts file from vm0
+if ! [ @@{calm_array_index}@@ -eq 0 ]
+then
+# If first launch, download hosts from
+  if [ -f /home/@@{admin_cred.username}@@/changes/semaphore ]
+  then
+    scp -o StrictHostKeyChecking=no @@{calm_array_address[0]}@@:/etc/hosts ./
+    sudo cp hosts /etc/known_hosts
+    rm hosts
+  else
+# If Scale out, connect to all and add new host except current VM and VM0
+# Download hosts from vm0
+    scp -o StrictHostKeyChecking=no @@{calm_array_address[0]}@@:/etc/hosts ./
+    sudo cp hosts /etc/known_hosts
+    rm hosts
+# update hosts in other VMs
+    for ip in $(cat /etc/hosts | grep $appname | cut -f1)
+    do
+      case $ip in
+        @@{calm_array_address[0]}@@|@@{address}@@)
+          Echo "No need to update this VM hosts file";;
+        *)
+        ssh -o StrictHostKeyChecking=no $ip "echo -e '@@{address}@@\t$name' | sudo tee -a /etc/hosts"
+      esac
+    done
+  fi
+fi

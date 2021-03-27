@@ -9,6 +9,10 @@
 
 # Script:
 
-set -ex
+# Get name
+hn="@@{name}@@"
+# Lower case
+hn="${hn,,}"
 
-sudo hostnamectl set-hostname @@{name}@@
+# Set hostname
+sudo hostnamectl set-hostname $hn

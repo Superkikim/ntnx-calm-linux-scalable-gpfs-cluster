@@ -9,7 +9,7 @@
 
 # Script:
 
-hn=$(hostname);
+hn=$(hostname)
 
 case @@{calm_array_index}@@ in
     [0-2])
@@ -19,6 +19,3 @@ case @@{calm_array_index}@@ in
         ssh -o StrictHostKeyChecking=no @@{calm_array_address[0]}@@ "echo -e '$hn:manager' | tee -a nodelist.txt"
     ;;
 esac
-
-# add host to vm0 known_hosts
-ssh -o StrictHostKeyChecking=no @@{calm_array_address[0]}@@ "echo -e '$(ssh-keyscan $hn)' | sudo tee -a /root/.ssh/known_hosts"

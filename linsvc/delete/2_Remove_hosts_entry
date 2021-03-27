@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# Author:      Akim Sissaoui
+# Action:      Create
+# Name:        2_Remove_node_entries
+# Type:        Execute
+# Script Type: Shell
+# Description: Remove the host from the hosts and known_hosts files on all VMs
+# Script:
+
+hn=$(hostname)
+
+# Get appname and make it lower case
+appname="@@{calm_application_name}@@"
+appname="${appname,,}"
+
+# List of remaining IPs
+ips=$(cat /etc/hosts | grep -v @@{address}@@ | grep $appname | cut -f1)
+
+# Comma separated list of remaining IPs
+ad="$(echo $ad | sed 's/\ /,/g')"
+
+for ip in $ips
+do
+# Remove entry from hosts file
+  ssh -o StrictHostKeyChecking=no $ip "sudo sed -i '/@@{address}@@/d' /etc/hosts"
+
+# Remove entry from known_hosts
+  ssh -o StrictHostKeyChecking=no $ip "sed -i '/$hn/d' .ssh/known_hosts"
+  ssh -o StrictHostKeyChecking=no $ip "sudo sed -i '/$hn/d' .ssh/known_hosts"
+  ssh -o StrictHostKeyChecking=no $ip "sed -i '/@@{address}@@/d' .ssh/known_hosts"
+  ssh -o StrictHostKeyChecking=no $ip "sudo sed -i '/@@{address}@@/d' .ssh/known_hosts"
+
+# Update Match Address directive in sshd
+  ssh -o StrictHostKeyChecking=no $ip "sudo sed -i '/Match Address/d' /etc/ssh/sshd_config"
+  ssh -o StrictHostKeyChecking=no $ip "sudo echo Match Address $ad | sudo tee -a /etc/ssh/sshd_config"
+  ssh -o StrictHostKeyChecking=no $ip "sudo service sshd restart"
+done

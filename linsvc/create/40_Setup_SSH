@@ -2,53 +2,55 @@
 
 # Author:      Akim Sissaoui
 # Action:      Create
-# Name:        40b_Setup_SSH
+# Name:        40_Setup_SSH
 # Type:        Execute
 # Script Type: Shell
 # Description: Configure SSH to secure access to the VM to users in the
 #              specified group only, and prevent ssh root login except from
 #              VMs deployed from the same blueprint
 
-# ADDRESS ARRAY BUG, LINE 39: # March 2021 16th
 # Script:
 
-set -ex
+# Get appname and make it lower case
+appname="@@{calm_application_name}@@"
+appname="${appname,,}"
 
-echo Create ssh group
+# Get list of IPs from hosts file
+ad="$(cat /etc/hosts | grep $appname | cut -f1)"
+
+# Replace space delimiter with comma delimiter
+ad="$(echo $ad | sed 's/\ /,/g')"
+
+# Create ssh group
 sudo groupadd @@{sshgroup}@@
-
-echo add new user to ssh group
+# For all machines, add centos to sshusers group
 sudo usermod -aG @@{sshgroup}@@ @@{admin_cred.username}@@
 
-echo Disable ssh root login
+# if first launch
+# Disable ssh root login
 sudo sed -i 's/#PermitRootLogin yes/PermitRootLogin no/g' /etc/ssh/sshd_config
 
-echo Disable ssh password authentication
+# Disable ssh password authentication
 sudo sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
 
-echo Allow only members of ssh group to login using ssh
+# Allow only members of ssh group to login using ssh
 echo 'AllowGroups @@{sshgroup}@@' | sudo tee -a /etc/ssh/sshd_config
 
-# Create GPFS Match Directive
-
-sudo sed '/GPFS/q' /etc/ssh/sshd_config | sudo tee -a /etc/ssh/sshd_config.new
-sudo mv /etc/ssh/sshd_config.new /etc/ssh/sshd_config
-echo "# Cluster Address Directive" | sudo tee -a /etc/ssh/sshd_config
+echo "Match Address $ad" | sudo tee -a /etc/ssh/sshd_config
+echo "PermitRootLogin without-password" | sudo tee -a /etc/ssh/sshd_config
+sudo service sshd restart
 
 
-# March 2021 16th: Due to a bug, if VM is added as scale out action, th script needs to be run differenty. Therefore
-# If the samaphore file does not exist (VM created subsenquently with Scale Out action), calm_array_address is missing
-# new VM IP which needs to be added... This has to be removed when the bug is fixed
+# If Scale out Replace Match Address directive and restart sshd
 
 if ! [ -f /home/@@{admin_cred.username}@@/changes/semaphore ]
-  then
-	echo "Match Address @@{calm_array_address}@@,@@{address}@@" | sudo tee -a /etc/ssh/sshd_config
-	echo "PermitRootLogin without-password" | sudo tee -a /etc/ssh/sshd_config
-  else
-	echo "Match Address @@{calm_array_address}@@" | sudo tee -a /etc/ssh/sshd_config
-	echo "PermitRootLogin without-password" | sudo tee -a /etc/ssh/sshd_config
+  for ip in $(cat /etc/hosts | grep $appname) | cut -f1)
+  do
+    if ! [ $ip == "@@{address}@@"]
+    then
+      ssh -o StrictHostKeyChecking=no $ip "sudo sed -i '/Match Address/d' /etc/ssh/sshd_config"
+      ssh -o StrictHostKeyChecking=no $ip "sudo echo Match Address $ad | sudo tee -a /etc/ssh/sshd_config"
+      ssh -o StrictHostKeyChecking=no $ip "sudo service sshd restart"
+    fi
+  done
 fi
-
-
-
-sudo service sshd restart

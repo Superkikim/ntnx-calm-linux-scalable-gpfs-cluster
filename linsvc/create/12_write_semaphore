@@ -10,31 +10,15 @@
 #              to update hosts file or sshd_config file
 # Script:
 
-# Stop if any error is raised
-set -ex
-
 # If the VM is vm0, create a semaphore file on all VMs. This will indicates
 # these VMs were created during 1st blueprint launch
 if [ @@{calm_array_index}@@ -eq 0 ]
 then
-  ips=($(echo "@@{calm_array_address}@@" | tr "," " "))
-
-  #Get number of replicas
-  nr_of_ips=${#ips[@]}
-
-  mkdir changes
-  touch changes/semaphore
+  ips=$(echo @@{calm_array_address}@@ | sed 's/,/\ /g')
 
   # Create semaphore on all existing VMs from the calm_array
-  for index in $(seq 0 $(expr $nr_of_ips - 1))
-    do
-      case $index in
-        0)
-          echo "This is the 1st VM. Nothing to do"
-        ;;
-        *)
-          ssh -o StrictHostKeyChecking=no ${ips[$index]} "mkdir changes;touch changes/semaphore"
-        ;;
-      esac
-    done
-  fi
+  for ip in $ips
+  do
+    ssh -o StrictHostKeyChecking=no $ip "mkdir changes;touch changes/semaphore"
+  done
+fi

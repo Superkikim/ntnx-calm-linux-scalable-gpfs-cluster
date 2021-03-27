@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# Author:      Akim Sissaoui
+# Action:      Create
+# Name:        41_Update_known_hosts_VM0
+# Type:        Execute
+# Script Type: Shell
+# Description: Add all hosts to known_hosts in VM0
+
+# Script:
+
+hn=$(hostname)
+
+# Add to known_hosts with hostname
+ssh -o StrictHostKeyChecking=no @@{calm_array_address[0]}@@ "echo -e '$(ssh-keyscan $hn | grep ssh-rsa)' | sudo tee -a /root/.ssh/known_hosts"
+
+# Add to known_hosts with ip address
+ssh -o StrictHostKeyChecking=no @@{calm_array_address[0]}@@ "echo -e '$(ssh-keyscan @@{address}@@)' | sudo tee -a /root/.ssh/known_hosts"

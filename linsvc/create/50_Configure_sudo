@@ -10,12 +10,10 @@
 
 # Script:
 
-set -ex
+# Create sudo file for new user
 
-echo Create sudo file for new user
-
-# We add command alias that we will block preventing users to run interactive
-# shells or to switch to root. This garantees tracking of user activity
+# We add command alias that we will prevent users to run interactive
+# shells or to switch to root without the rootpassword. This garantees tracking of user activity
 # Only the admin user will be able to run any command without password only from
 # localhost and except commands in NSHELLS and NSU alliases
 
