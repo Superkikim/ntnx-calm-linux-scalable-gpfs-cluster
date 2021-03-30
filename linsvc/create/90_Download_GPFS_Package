@@ -10,7 +10,10 @@
 
 # Script:
 
-set -e
+set -ex
+
+appname="@@{calm_application_name}@@"
+appname="${appname,,}"
 
 # The download function use wget and awk to print download progression percentage in a readable manner for Calm script output.
 # The piped line will parse only the percentage value. Awk will print it 20 times, and then add a carriage return.
@@ -18,56 +21,41 @@ set -e
 
 download()
 {
-    local url=$1
-    wget --progress=dot:mega $url -O $file 2>&1 | grep --line-buffered "%" | \
-        sed -u -e "s,\.,,g" | awk '{printf("%4s", $2); if(++onr%20 == 0) print ""; }'
-    echo " DONE"
+  local url=$1
+  wget --progress=dot:mega $url -O $file 2>&1 | grep --line-buffered "%" | \
+      sed -u -e "s,\.,,g" | awk '{printf("%4s", $2); if(++onr%20 == 0) print ""; }'
+  echo " DONE"
 }
 
 # Skip if not VM 0
 
 if [ @@{calm_array_index}@@ -eq 0 ]
-
 then # Only on VM0
 	# Create install dir and download package
 	mkdir install
-    cd install
-    url="@@{gpfs_package_url}@@"
-    file=$(wget --spider --server-response $url 2>&1 | grep -i content-disposition | cut -d "=" -f2)
+  cd install
+  url="@@{gpfs_package_url}@@"
+  file=$(wget --spider --server-response $url 2>&1 | grep -i content-disposition | cut -d "=" -f2)
 
-    echo "Downloading $file:"
-    download $url
+  echo "Downloading $file:"
+  download $url
 
 	# Untar package
 	echo -e "\nDecompressing file $file\n"
-    tar -xzf $file
+  tar -xzf $file
 	# Deleted downloaded file
 	rm $file
 
+  for ip in $(cat /etc/hosts | grep $appname | cut -f1)
+  do
+      if ! [ "$ip" == "@@{address}@@" ]
+      then
+        scp -r ~/install $ip:
+      fi
+  done
+fi
 
-
-# Delete downloading semaphore on all nodes
-ips=$(echo "@@{calm_array_address}@@" | tr "," " ")
-
-    for ip in $ips
-    do
-        if [ "$ip" == "@@{address}@@" ]
-        then
-            echo "VM0. Nothing to do"
-        else
-            ssh -o StrictHostKeyChecking=no $ip rm downloading
-        fi
-    done
-
-else # If not VM0
-	echo "Not VM 0"
-	if ! [ -f /home/@@{admin_cred.username}@@/changes/semaphore ]
-
-	then #Only on subsequent scale out VM
-    	scp -r @@{calm_array_address[0]}@@:install ./
-
-    else #Only on VM from first launch, but VM0
-		touch downloading
-		inotifywait -e delete_self "downloading" && scp -r @@{calm_array_address[0]}@@:install ./
-	fi
+if ! [ -f /home/@@{admin_cred.username}@@/changes/semaphore ]
+then #Only on subsequent scale out VM
+  scp -r @@{calm_array_address[0]}@@:install ~/
 fi
