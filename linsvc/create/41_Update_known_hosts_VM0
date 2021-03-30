@@ -12,7 +12,9 @@
 hn=$(hostname)
 
 # Add to known_hosts with hostname
-ssh -o StrictHostKeyChecking=no @@{calm_array_address[0]}@@ "echo -e '$(ssh-keyscan $hn | grep ssh-rsa)' | sudo tee -a /root/.ssh/known_hosts"
+ssh -o StrictHostKeyChecking=no @@{calm_array_address[0]}@@ "echo -e '$(ssh-keyscan $hn)' | tee -a .ssh/known_hosts"
+ssh -o StrictHostKeyChecking=no @@{calm_array_address[0]}@@ "echo -e '$(ssh-keyscan $hn)' | sudo tee -a /root/.ssh/known_hosts"
 
 # Add to known_hosts with ip address
+ssh -o StrictHostKeyChecking=no @@{calm_array_address[0]}@@ "echo -e '$(ssh-keyscan @@{address}@@)' | tee -a .ssh/known_hosts"
 ssh -o StrictHostKeyChecking=no @@{calm_array_address[0]}@@ "echo -e '$(ssh-keyscan @@{address}@@)' | sudo tee -a /root/.ssh/known_hosts"

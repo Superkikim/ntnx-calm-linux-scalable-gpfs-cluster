@@ -2,7 +2,7 @@
 
 # Author:      Akim Sissaoui
 # Action:      Create
-# Name:        2_Remove_node_entries
+# Name:        7_Remove_node_entries
 # Type:        Execute
 # Script Type: Shell
 # Description: Remove the host from the hosts and known_hosts files on all VMs
@@ -18,7 +18,7 @@ appname="${appname,,}"
 ips=$(cat /etc/hosts | grep -v @@{address}@@ | grep $appname | cut -f1)
 
 # Comma separated list of remaining IPs
-ad="$(echo $ad | sed 's/\ /,/g')"
+ad="$(echo $ips | sed 's/\ /,/g')"
 
 for ip in $ips
 do
@@ -27,12 +27,18 @@ do
 
 # Remove entry from known_hosts
   ssh -o StrictHostKeyChecking=no $ip "sed -i '/$hn/d' .ssh/known_hosts"
-  ssh -o StrictHostKeyChecking=no $ip "sudo sed -i '/$hn/d' .ssh/known_hosts"
+  ssh -o StrictHostKeyChecking=no $ip "sudo sed -i '/$hn/d' /root/.ssh/known_hosts"
   ssh -o StrictHostKeyChecking=no $ip "sed -i '/@@{address}@@/d' .ssh/known_hosts"
-  ssh -o StrictHostKeyChecking=no $ip "sudo sed -i '/@@{address}@@/d' .ssh/known_hosts"
+  ssh -o StrictHostKeyChecking=no $ip "sudo sed -i '/@@{address}@@/d' /root/.ssh/known_hosts"
 
 # Update Match Address directive in sshd
-  ssh -o StrictHostKeyChecking=no $ip "sudo sed -i '/Match Address/d' /etc/ssh/sshd_config"
+# Cannot be sudo ssh because at that stage, this host ip is NOT allowed by ssh
+# to connect with root over ssh. That is the purpose of below routine.
+  ssh -o StrictHostKeyChecking=no $ip "head -n -2 /etc/ssh/sshd_config > sshd_config.tmp && mv sshd_config.tmp /etc/ssh/sshd_config"
   ssh -o StrictHostKeyChecking=no $ip "sudo echo Match Address $ad | sudo tee -a /etc/ssh/sshd_config"
+  ssh -o StrictHostKeyChecking=no $ip "echo PermitRootLogin without-password | sudo tee -a /etc/ssh/sshd_config"
+# restore sshd_config selinux permissions
+  ssh -o StrictHostKeyChecking=no $ip sudo /sbin/restorecon -v /etc/ssh/sshd_config
   ssh -o StrictHostKeyChecking=no $ip "sudo service sshd restart"
+
 done

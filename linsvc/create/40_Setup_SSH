@@ -11,6 +11,8 @@
 
 # Script:
 
+set -ex
+
 # Get appname and make it lower case
 appname="@@{calm_application_name}@@"
 appname="${appname,,}"
@@ -44,12 +46,18 @@ sudo service sshd restart
 # If Scale out Replace Match Address directive and restart sshd
 
 if ! [ -f /home/@@{admin_cred.username}@@/changes/semaphore ]
-  for ip in $(cat /etc/hosts | grep $appname) | cut -f1)
+then
+  for ip in $(cat /etc/hosts | grep $appname | cut -f1)
   do
     if ! [ $ip == "@@{address}@@"]
     then
-      ssh -o StrictHostKeyChecking=no $ip "sudo sed -i '/Match Address/d' /etc/ssh/sshd_config"
+      # Cannot be sudo ssh because at that stage, this host ip is NOT allowed by ssh
+      # to connect with root over ssh. That is the purpose of below routine.
+      ssh -o StrictHostKeyChecking=no $ip "sudo head -n -2 /etc/ssh/sshd_config > sshd_config.tmp && sudo mv sshd_config.tmp /etc/ssh/sshd_config"
       ssh -o StrictHostKeyChecking=no $ip "sudo echo Match Address $ad | sudo tee -a /etc/ssh/sshd_config"
+      ssh -o StrictHostKeyChecking=no $ip "echo PermitRootLogin without-password | sudo tee -a /etc/ssh/sshd_config"
+      # restore sshd_config selinux permissions
+      ssh -o StrictHostKeyChecking=no $ip sudo /sbin/restorecon -v /etc/ssh/sshd_config
       ssh -o StrictHostKeyChecking=no $ip "sudo service sshd restart"
     fi
   done

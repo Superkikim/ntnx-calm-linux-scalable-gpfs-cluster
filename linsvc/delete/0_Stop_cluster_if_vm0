@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Author:      Akim Sissaoui
+# Action:      Create
+# Name:        0_Stop_cluster_if_vm0
+# Type:        Execute
+# Script Type: Shell
+# Description: Stop the GPFS cluster if this is VM0, assuming the app is deleting
+# Script:
+
+if [ @@{calm_array_index}@@ -eq 0 ]
+then
+  source .bash_profile
+  sudo env "PATH=$PATH" mmshutdown -a
+fi
