@@ -34,11 +34,11 @@ do
 # Update Match Address directive in sshd
 # Cannot be sudo ssh because at that stage, this host ip is NOT allowed by ssh
 # to connect with root over ssh. That is the purpose of below routine.
-  ssh -o StrictHostKeyChecking=no $ip "head -n -2 /etc/ssh/sshd_config > sshd_config.tmp && mv sshd_config.tmp /etc/ssh/sshd_config"
-  ssh -o StrictHostKeyChecking=no $ip "sudo echo Match Address $ad | sudo tee -a /etc/ssh/sshd_config"
+  ssh -o StrictHostKeyChecking=no $ip "sudo head -n -2 /etc/ssh/sshd_config > sshd_config.tmp && sudo mv sshd_config.tmp /etc/ssh/sshd_config"
+  ssh -o StrictHostKeyChecking=no $ip "echo Match Address $ad | sudo tee -a /etc/ssh/sshd_config"
   ssh -o StrictHostKeyChecking=no $ip "echo PermitRootLogin without-password | sudo tee -a /etc/ssh/sshd_config"
 # restore sshd_config selinux permissions
-  ssh -o StrictHostKeyChecking=no $ip sudo /sbin/restorecon -v /etc/ssh/sshd_config
+  ssh -o StrictHostKeyChecking=no $ip "sudo /sbin/restorecon -v /etc/ssh/sshd_config"
   ssh -o StrictHostKeyChecking=no $ip "sudo service sshd restart"
 
 done
