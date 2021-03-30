@@ -31,4 +31,5 @@ then
   source .bash_profile
   sudo env "PATH=$PATH" mmcrnsd -F NSD_Stanza_File.txt
   sudo env "PATH=$PATH" mmcrfs @@{shared_vol_name}@@ -F NSD_Stanza_File.txt -B 1m -T /var/@@{shared_vol_name}@@ -A yes
+  sudo env "PATH=$PATH" mmmount @@{shared_vol_name}@@ -a
 fi
