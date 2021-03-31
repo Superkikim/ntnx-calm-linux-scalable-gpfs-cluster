@@ -40,5 +40,6 @@ do
 # restore sshd_config selinux permissions
   ssh -o StrictHostKeyChecking=no $ip "sudo /sbin/restorecon -v /etc/ssh/sshd_config"
   ssh -o StrictHostKeyChecking=no $ip "sudo service sshd restart"
-
+# Update nodelist.txt on VM0
+  ssh -o StrictHostKeyChecking=no @@{calm_array_address[0]}@@ "sed -i '/$hn/d' ~/nodelist.txt"
 done

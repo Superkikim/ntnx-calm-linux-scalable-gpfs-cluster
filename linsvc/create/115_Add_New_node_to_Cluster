@@ -14,5 +14,10 @@ then
 	ssh @@{calm_array_address[0]}@@ sudo env "PATH=$PATH" mmaddnode -N $(hostname)
   sudo env "PATH=$PATH" mmchlicense server --accept -N $(hostname)
 	sudo env "PATH=$PATH" mmstartup
+
+	while ! [ $(sudo env "PATH=$PATH" mmgetstate | grep -c active) -eq 1 ]
+		do
+			sleep .5
+		done
   sudo env "PATH=$PATH" mmmount @@{shared_vol_name}@@
 fi
